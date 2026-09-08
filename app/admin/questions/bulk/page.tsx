@@ -144,11 +144,20 @@ export default function BulkUploadPage() {
                     <td className="p-2 text-gray-400">{i + 2}</td>
                     {COLUMNS.map((col) => (
                       <td key={col} className="p-1">
-                        <input
-                          value={row[col] ?? ""}
-                          onChange={(e) => updateCell(i, col, e.target.value)}
-                          className="w-full min-w-[100px] px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        />
+                        {col === "question" ? (
+                          <textarea
+                            value={row[col] ?? ""}
+                            onChange={(e) => updateCell(i, col, e.target.value)}
+                            className="w-full min-w-[250px] px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 resize-y"
+                            rows={3}
+                          />
+                        ) : (
+                          <input
+                            value={row[col] ?? ""}
+                            onChange={(e) => updateCell(i, col, e.target.value)}
+                            className="w-full min-w-[100px] px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                        )}
                       </td>
                     ))}
                     <td className="p-2">
