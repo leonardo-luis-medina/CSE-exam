@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Year {
+  id        Int        @id @default(autoincrement())
+  year      Int        @unique
+  questions Question[]
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  questions Question[]
+}
+
+model Question {
+  id         Int      @id @default(autoincrement())
+  text       String
+  imageUrl   String?
+  categoryId Int
+  yearId     Int?
+  category   Category @relation(fields: [categoryId], references: [id])
+  year       Year?    @relation(fields: [yearId], references: [id])
+  choices    Choice[]
+  createdAt  DateTime @default(now())
+}
+
+model Choice {
+  id         Int      @id @default(autoincrement())
+  text       String
+  isCorrect  Boolean  @default(false)
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+}
