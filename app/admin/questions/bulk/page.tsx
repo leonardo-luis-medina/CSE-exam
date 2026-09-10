@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import Link from "next/link";
 
 type Row = Record<string, string>;
+type Category = { id: number; name: string };
+type Year = { id: number; year: number };
 
 const COLUMNS = [
   "year",
@@ -17,12 +19,30 @@ const COLUMNS = [
   "correctChoice",
 ];
 
+const EMPTY_ROW: Row = {
+  year: "",
+  category: "",
+  question: "",
+  choice1: "",
+  choice2: "",
+  choice3: "",
+  choice4: "",
+  correctChoice: "",
+};
+
 export default function BulkUploadPage() {
   const [fileName, setFileName] = useState("");
   const [preview, setPreview] = useState<Row[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [result, setResult] = useState<{ imported: number } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [years, setYears] = useState<Year[]>([]);
+
+  useEffect(() => {
+    fetch("/api/categories").then((r) => r.json()).then(setCategories);
+    fetch("/api/years").then((r) => r.json()).then(setYears);
+  }, []);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,7 +55,7 @@ export default function BulkUploadPage() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        setPreview(results.data as Row[]);
+        setPreview((prev) => [...prev, ...(results.data as Row[])]);
       },
     });
   };
@@ -50,6 +70,10 @@ export default function BulkUploadPage() {
 
   const removeRow = (rowIndex: number) => {
     setPreview((prev) => prev.filter((_, i) => i !== rowIndex));
+  };
+
+  const addBlankRow = () => {
+    setPreview((prev) => [...prev, { ...EMPTY_ROW }]);
   };
 
   const handleUpload = async () => {
@@ -86,20 +110,31 @@ export default function BulkUploadPage() {
       </div>
 
       <div className="bg-gray-50 border rounded-lg p-4 mb-6 text-sm">
-        <p className="font-medium mb-2">CSV format required:</p>
+        <p className="font-medium mb-2">CSV format (for file upload):</p>
         <code className="block bg-white p-2 rounded border text-xs overflow-x-auto">
           year,category,question,choice1,choice2,choice3,choice4,correctChoice
         </code>
         <ul className="list-disc list-inside mt-2 text-gray-600">
           <li>Leave <code>year</code> blank for &quot;Reviewer&quot; (no specific year)</li>
-          <li><code>category</code> must match an existing category name exactly</li>
           <li><code>correctChoice</code> is a number: 1, 2, 3, or 4</li>
-          <li>If a question or choice contains a comma, wrap that field in double quotes in your CSV</li>
-          <li>You can edit any cell below directly before importing — no need to re-upload a fixed file</li>
+          <li>You can edit any cell below directly, or click &quot;Add Row&quot; to type a question manually — no CSV needed</li>
         </ul>
       </div>
 
-      <input type="file" accept=".csv" onChange={handleFile} className="mb-4 block" />
+      <div className="flex items-center gap-3 mb-4">
+        <input type="file" accept=".csv" onChange={handleFile} className="block" />
+        <button
+          onClick={addBlankRow}
+          type="button"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm whitespace-nowrap"
+        >
+          + Add Row
+        </button>
+      </div>
+
+      {fileName && (
+        <p className="text-sm text-gray-500 mb-2">Last file loaded: {fileName}</p>
+      )}
 
       {result && (
         <p className="text-green-600 font-medium mb-4">
@@ -123,15 +158,20 @@ export default function BulkUploadPage() {
       {preview.length > 0 && (
         <>
           <p className="mb-2 text-gray-600">
-            Preview & Edit: {preview.length} row(s) from <strong>{fileName}</strong>
+            Preview & Edit: {preview.length} row(s)
           </p>
           <div className="overflow-x-auto border rounded mb-4 max-h-[32rem] overflow-y-auto">
-            <table className="w-full text-sm border-collapse">
+            <table className="w-full text-sm border-collapse table-fixed">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
                   <th className="text-left p-2 border-b w-10">#</th>
                   {COLUMNS.map((col) => (
-                    <th key={col} className="text-left p-2 border-b whitespace-nowrap">
+                    <th
+                      key={col}
+                      className={`text-left p-2 border-b whitespace-nowrap ${
+                        col === "question" ? "w-[300px]" : "w-[130px]"
+                      }`}
+                    >
                       {col}
                     </th>
                   ))}
@@ -141,26 +181,67 @@ export default function BulkUploadPage() {
               <tbody>
                 {preview.map((row, i) => (
                   <tr key={i} className="border-b hover:bg-gray-50">
-                    <td className="p-2 text-gray-400">{i + 2}</td>
+                    <td className="p-2 text-gray-400 align-top">{i + 1}</td>
                     {COLUMNS.map((col) => (
-                      <td key={col} className="p-1">
+                      <td
+                        key={col}
+                        className={`p-1 align-top ${col === "question" ? "w-[300px]" : "w-[130px]"}`}
+                      >
                         {col === "question" ? (
                           <textarea
                             value={row[col] ?? ""}
                             onChange={(e) => updateCell(i, col, e.target.value)}
-                            className="w-full min-w-[250px] px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 resize-y"
+                            className="w-full border rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-y"
                             rows={3}
                           />
+                        ) : col === "category" ? (
+                          <select
+                            value={row[col] ?? ""}
+                            onChange={(e) => updateCell(i, col, e.target.value)}
+                            className="w-full border rounded text-sm px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          >
+                            <option value="">Select</option>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : col === "year" ? (
+                          <select
+                            value={row[col] ?? ""}
+                            onChange={(e) => updateCell(i, col, e.target.value)}
+                            className="w-full border rounded text-sm px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          >
+                            <option value="">Reviewer</option>
+                            {years.map((y) => (
+                              <option key={y.id} value={y.year}>
+                                {y.year}
+                              </option>
+                            ))}
+                          </select>
+                        ) : col === "correctChoice" ? (
+                          <select
+                            value={row[col] ?? ""}
+                            onChange={(e) => updateCell(i, col, e.target.value)}
+                            className="w-full border rounded text-sm px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          >
+                            <option value="">-</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                          </select>
                         ) : (
                           <input
                             value={row[col] ?? ""}
                             onChange={(e) => updateCell(i, col, e.target.value)}
-                            className="w-full min-w-[100px] px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                            className="w-full border rounded text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
                           />
                         )}
                       </td>
                     ))}
-                    <td className="p-2">
+                    <td className="p-2 align-top">
                       <button
                         onClick={() => removeRow(i)}
                         className="text-red-500 hover:text-red-700 text-xs"
@@ -175,13 +256,23 @@ export default function BulkUploadPage() {
             </table>
           </div>
 
-          <button
-            onClick={handleUpload}
-            disabled={uploading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {uploading ? "Uploading..." : `Import ${preview.length} Question(s)`}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleUpload}
+              disabled={uploading}
+              type="button"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {uploading ? "Uploading..." : `Import ${preview.length} Question(s)`}
+            </button>
+            <button
+              onClick={addBlankRow}
+              type="button"
+              className="text-green-600 hover:underline text-sm"
+            >
+              + Add another row
+            </button>
+          </div>
         </>
       )}
     </div>
