@@ -10,6 +10,7 @@ type Question = {
   category: { name: string };
   year: { year: number } | null;
   choices: Choice[];
+  createdAt: string;
 };
 
 type SortMode = "default" | "year" | "category";
@@ -20,7 +21,7 @@ export default function QuestionListPage() {
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("default");
 
-  const [activeYearTags, setActiveYearTags] = useState<string[]>([]); // "Reviewer" or year as string
+  const [activeYearTags, setActiveYearTags] = useState<string[]>([]);
   const [activeCategoryTags, setActiveCategoryTags] = useState<string[]>([]);
 
   const loadQuestions = async () => {
@@ -44,7 +45,6 @@ export default function QuestionListPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Build the list of available year/category options from the actual questions loaded
   const availableYears = useMemo(() => {
     const set = new Set<string>();
     questions.forEach((q) => set.add(q.year ? q.year.year.toString() : "Reviewer"));
@@ -115,7 +115,6 @@ export default function QuestionListPage() {
         </Link>
       </div>
 
-      {/* Filter section */}
       <div className="mb-4 space-y-3">
         <div>
           <p className="text-sm text-gray-600 mb-1">Filter by Year:</p>
@@ -155,7 +154,6 @@ export default function QuestionListPage() {
           </div>
         </div>
 
-        {/* Active tag chips with individual X removal */}
         {hasActiveTags && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-sm text-gray-500">Active filters:</span>
@@ -191,7 +189,6 @@ export default function QuestionListPage() {
         )}
       </div>
 
-      {/* Sort dropdown */}
       <div className="flex items-center gap-2 mb-6">
         <label htmlFor="sort" className="text-sm text-gray-600">
           Sort by:
@@ -229,15 +226,24 @@ export default function QuestionListPage() {
                   {q.category.name} · {q.year ? q.year.year : "Reviewer"}
                 </p>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(q.id);
-                }}
-                className="text-red-500 hover:text-red-700 text-sm ml-4 shrink-0"
-              >
-                Delete
-              </button>
+              <div className="flex items-center gap-3 ml-4 shrink-0">
+                <Link
+                  href={`/admin/questions/${q.id}/edit`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-blue-500 hover:text-blue-700 text-sm"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(q.id);
+                  }}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
 
             {expandedId === q.id && (
@@ -255,6 +261,13 @@ export default function QuestionListPage() {
                     {c.text}
                   </div>
                 ))}
+                <p className="text-xs text-gray-400 pt-2">
+                  Created {new Date(q.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
               </div>
             )}
           </div>
