@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import ExamCard from "./ExamCard";
 
 type Exam = {
   id: number;
@@ -69,61 +70,7 @@ export default function ExamSection({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {pageItems.map((exam) => (
-          <div
-            key={exam.id}
-            className="border rounded-xl overflow-hidden hover:shadow-md transition-shadow bg-white"
-          >
-            <div className="h-36 bg-gray-100 flex items-center justify-center">
-              {exam.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={exam.imageUrl}
-                  alt={exam.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-gray-300 text-sm">No image</span>
-              )}
-            </div>
-            <div className="p-4">
-              <p className="font-semibold text-gray-900 mb-1">{exam.name}</p>
-              <p className="text-sm text-gray-500 mb-3 whitespace-pre-wrap">{exam.description}</p>
-
-              <div className="flex gap-2 mb-2">
-                <Link
-                  href={`/exam/quiz?examId=${exam.id}`}
-                  className="flex-1 text-center bg-blue-600 text-white text-sm px-3 py-2 rounded hover:bg-blue-700"
-                >
-                  Default
-                </Link>
-                <Link
-                  href={`/exam/setup?examId=${exam.id}`}
-                  className="flex-1 text-center bg-gray-100 text-gray-700 text-sm px-3 py-2 rounded hover:bg-gray-200"
-                >
-                  Custom
-                </Link>
-              </div>
-
-              {isAdmin && (
-                <div className="flex gap-2">
-                  <Link
-                    href={`/admin/exams/${exam.id}/edit`}
-                    className="flex-1 text-center text-blue-600 text-xs px-3 py-1.5 rounded border border-blue-200 hover:bg-blue-50"
-                  >
-                    Edit
-                  </Link>
-                  {onDelete && (
-                    <button
-                      onClick={() => onDelete(exam.id)}
-                      className="flex-1 text-center text-red-500 text-xs px-3 py-1.5 rounded border border-red-200 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <ExamCard key={exam.id} exam={exam} isAdmin={isAdmin} onDelete={onDelete} />
         ))}
 
         {showAddCard && isAdmin && (

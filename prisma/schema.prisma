@@ -45,11 +45,24 @@ model Admin {
   password String
 }
 
+
 model Exam {
   id          Int      @id @default(autoincrement())
   name        String
   description String
   imageUrl    String?
   config      String
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
+  presets     ExamPreset[]
+}
+
+model ExamPreset {
+  id        Int      @id @default(autoincrement())
+  examId    Int
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  name      String
+  config    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 }
