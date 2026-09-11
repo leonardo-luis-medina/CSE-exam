@@ -2,25 +2,39 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shuffleArray } from "@/lib/shuffle";
 
+type ExamConfig = { categories: { id: number; count: number }[]; years: string[] };
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const categoriesParam = searchParams.get("categories"); // e.g. "1:10,2:0,3:25"
-  const yearsParam = searchParams.get("years"); // e.g. "2024,2023,reviewer"
+  const examId = searchParams.get("examId");
+
+  let categoriesParam = searchParams.get("categories");
+  let yearsParam = searchParams.get("years");
+
+  // If an examId is provided, load its saved config and use that instead of raw params
+  if (examId) {
+    const exam = await prisma.exam.findUnique({ where: { id: parseInt(examId) } });
+    if (!exam) {
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+    const config: ExamConfig = JSON.parse(exam.config);
+    categoriesParam = config.categories.map((c) => `${c.id}:${c.count}`).join(",");
+    yearsParam = config.years && config.years.length > 0 ? config.years.join(",") : null;
+  }
 
   const selections: { categoryId: number; count: number }[] = [];
   if (categoriesParam) {
     categoriesParam.split(",").forEach((pair) => {
       const [idStr, countStr] = pair.split(":");
-      const id = parseInt(idStr);
+      const catId = parseInt(idStr);
       const count = parseInt(countStr) || 0;
-      if (!isNaN(id)) selections.push({ categoryId: id, count });
+      if (!isNaN(catId)) selections.push({ categoryId: catId, count });
     });
   }
   const categoryIds = selections.map((s) => s.categoryId);
 
-  // Resolve year filter: convert requested year numbers into Year IDs, track if "reviewer" (null yearId) was requested
   let yearIdFilter: number[] | null = null;
-  let includeReviewer = true; // default: no year filter means include everything, including reviewer
+  let includeReviewer = true;
 
   if (yearsParam) {
     const tokens = yearsParam.split(",").map((t) => t.trim());
@@ -33,7 +47,7 @@ export async function GET(req: Request) {
       });
       yearIdFilter = matchedYears.map((y) => y.id);
     } else {
-      yearIdFilter = []; // only "reviewer" was selected, no specific years
+      yearIdFilter = [];
     }
   }
 

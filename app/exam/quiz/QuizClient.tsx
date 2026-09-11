@@ -12,6 +12,7 @@ type AnswerRecord = { selectedChoiceId: number; correct: boolean };
 
 function QuizContent() {
   const searchParams = useSearchParams();
+  const examId = searchParams.get("examId") ?? "";
   const categoriesParam = searchParams.get("categories") ?? "";
   const yearsParam = searchParams.get("years") ?? "";
 
@@ -27,8 +28,12 @@ function QuizContent() {
   const loadExam = async () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (categoriesParam) params.set("categories", categoriesParam);
-    if (yearsParam) params.set("years", yearsParam);
+    if (examId) {
+      params.set("examId", examId);
+    } else {
+      if (categoriesParam) params.set("categories", categoriesParam);
+      if (yearsParam) params.set("years", yearsParam);
+    }
 
     const res = await fetch(`/api/exam/questions?${params.toString()}`);
     const data: CategoryBlock[] = await res.json();
@@ -47,7 +52,7 @@ function QuizContent() {
   useEffect(() => {
     loadExam();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoriesParam, yearsParam]);
+  }, [examId, categoriesParam, yearsParam]);
 
   if (loading) {
     return <div className="p-8 text-center">Loading exam...</div>;
