@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const presets = await prisma.examPreset.findMany({
     where: { examId: parseInt(id) },
-    orderBy: { createdAt: "asc" },
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
   return NextResponse.json(presets);
 }
@@ -29,11 +29,14 @@ export async function POST(
     return NextResponse.json({ error: "Name and config are required" }, { status: 400 });
   }
 
+  const count = await prisma.examPreset.count({ where: { examId: parseInt(id) } });
+
   const preset = await prisma.examPreset.create({
     data: {
       examId: parseInt(id),
       name,
       config: JSON.stringify(config),
+      order: count,
     },
   });
 

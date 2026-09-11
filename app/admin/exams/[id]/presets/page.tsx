@@ -14,6 +14,7 @@ export default function ExamPresetsPage() {
   const [exam, setExam] = useState<Exam | null>(null);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dragId, setDragId] = useState<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -36,16 +37,36 @@ export default function ExamPresetsPage() {
     load();
   };
 
+  const persistOrder = async (newList: Preset[]) => {
+    await fetch(`/api/exams/${examId}/presets/reorder`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: newList.map((p) => p.id) }),
+    });
+  };
+
+  const handleDrop = (targetId: number) => {
+    if (dragId === null || dragId === targetId) return;
+    const list = [...presets];
+    const fromIndex = list.findIndex((p) => p.id === dragId);
+    const toIndex = list.findIndex((p) => p.id === targetId);
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(toIndex, 0, moved);
+    setPresets(list);
+    persistOrder(list);
+    setDragId(null);
+  };
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
   if (loading) return <div className="p-8">Loading...</div>;
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-2">
-        <h1 className="text-2xl font-bold">Presets for &quot;{exam?.name}&quot;</h1>
-      </div>
+      <h1 className="text-2xl font-bold mb-2">Presets for &quot;{exam?.name}&quot;</h1>
       <p className="text-gray-500 text-sm mb-6">
-        Presets are the named quick-start options visitors see in the dropdown on this
-        exam&apos;s card.
+        Drag to reorder. These show up in the dropdown on this exam&apos;s homepage card.
       </p>
 
       <Link
@@ -61,8 +82,20 @@ export default function ExamPresetsPage() {
 
       <div className="space-y-3">
         {presets.map((preset) => (
-          <div key={preset.id} className="border rounded-lg p-4 flex justify-between items-center">
-            <span className="font-medium">{preset.name}</span>
+          <div
+            key={preset.id}
+            draggable
+            onDragStart={() => setDragId(preset.id)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => handleDrop(preset.id)}
+            className={`border rounded-lg p-4 flex justify-between items-center cursor-move transition-opacity ${
+              dragId === preset.id ? "opacity-40" : ""
+            }`}
+          >
+            <div>
+              <p className="font-medium">{preset.name}</p>
+              <p className="text-xs text-gray-400">Created: {formatDate(preset.createdAt)}</p>
+            </div>
             <div className="flex gap-3">
               <Link
                 href={`/admin/exams/${examId}/presets/${preset.id}/edit`}

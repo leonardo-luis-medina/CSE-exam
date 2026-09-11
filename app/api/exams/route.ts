@@ -2,15 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 
-// Public - anyone can view the list of exams (for the homepage marketplace)
 export async function GET() {
   const exams = await prisma.exam.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
   });
   return NextResponse.json(exams);
 }
 
-// Admin only - create a new exam card
 export async function POST(req: Request) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
@@ -22,12 +20,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Name, description, and config are required" }, { status: 400 });
   }
 
+  const count = await prisma.exam.count();
+
   const exam = await prisma.exam.create({
     data: {
       name,
       description,
       imageUrl: imageUrl || null,
       config: JSON.stringify(config),
+      order: count,
     },
   });
 

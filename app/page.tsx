@@ -38,7 +38,12 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <div className="border-b">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-semibold text-gray-900">ReviewerHub</span>
+          <span className="flex items-center gap-2 font-semibold text-gray-900">
+            <span className="w-7 h-7 rounded-md bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
+              R
+            </span>
+            ReviewerHub
+          </span>
           {isAdmin ? (
             <div className="flex items-center gap-4 text-sm">
               <Link href="/admin" className="text-gray-600 hover:text-gray-900">
