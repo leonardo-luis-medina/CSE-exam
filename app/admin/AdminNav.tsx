@@ -15,13 +15,22 @@ const LINKS = [
 export default function AdminNav() {
   const pathname = usePathname();
 
-  // Don't show the nav on the login page itself
   if (pathname === "/admin/login") return null;
 
   return (
     <nav className="bg-gray-900 text-white">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
         <div className="flex items-center gap-1 overflow-x-auto">
+          <Link
+            href="/"
+            className="flex items-center gap-2 pr-3 mr-2 border-r border-gray-700 shrink-0"
+          >
+            <span className="w-7 h-7 rounded-md bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
+              R
+            </span>
+            <span className="text-sm font-medium hidden sm:inline">Home</span>
+          </Link>
+
           {LINKS.map((link) => {
             const isActive =
               link.href === "/admin"
