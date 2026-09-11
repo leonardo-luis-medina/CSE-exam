@@ -1,9 +1,19 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export const { auth: middleware } = NextAuth(authConfig);
+export function middleware(request: NextRequest) {
+  const isOnLoginPage = request.nextUrl.pathname === "/admin/login";
 
-export default middleware;
+  const hasSession = request.cookies
+    .getAll()
+    .some((c) => c.name.includes("session-token"));
+
+  if (!isOnLoginPage && !hasSession) {
+    return NextResponse.redirect(new URL("/admin/login", request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: ["/admin/:path*"],
