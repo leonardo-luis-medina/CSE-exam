@@ -4,6 +4,10 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+
+export const dynamic = "force-dynamic";
+
+
 type ChoiceItem = { id: number; text: string; isCorrect: boolean };
 type QuestionItem = { id: number; text: string; choices: ChoiceItem[] };
 type CategoryBlock = { id: number; name: string; questions: QuestionItem[] };
