@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ type CategoryBlock = { id: number; name: string; questions: QuestionItem[] };
 
 type AnswerRecord = { selectedChoiceId: number; correct: boolean };
 
-export default function QuizPage() {
+function QuizContent() {
   const searchParams = useSearchParams();
   const categoriesParam = searchParams.get("categories") ?? "";
   const yearsParam = searchParams.get("years") ?? "";
@@ -248,5 +248,13 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading exam...</div>}>
+      <QuizContent />
+    </Suspense>
   );
 }
