@@ -17,6 +17,7 @@ const COLUMNS = [
   "choice3",
   "choice4",
   "correctChoice",
+  "imageUrl",
 ];
 
 const EMPTY_ROW: Row = {
@@ -28,7 +29,26 @@ const EMPTY_ROW: Row = {
   choice3: "",
   choice4: "",
   correctChoice: "",
+  imageUrl: "",
 };
+
+async function uploadToCloudinary(file: File): Promise<string | null> {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  if (!cloudName || !uploadPreset) return null;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json();
+  if (!res.ok) return null;
+  return data.secure_url;
+}
 
 export default function BulkUploadPage() {
   const [fileName, setFileName] = useState("");
@@ -36,6 +56,7 @@ export default function BulkUploadPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [result, setResult] = useState<{ imported: number } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingRowIndex, setUploadingRowIndex] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<Year[]>([]);
 
@@ -66,6 +87,13 @@ export default function BulkUploadPage() {
       updated[rowIndex] = { ...updated[rowIndex], [column]: value };
       return updated;
     });
+  };
+
+  const handleImageFile = async (rowIndex: number, file: File) => {
+    setUploadingRowIndex(rowIndex);
+    const url = await uploadToCloudinary(file);
+    if (url) updateCell(rowIndex, "imageUrl", url);
+    setUploadingRowIndex(null);
   };
 
   const removeRow = (rowIndex: number) => {
@@ -112,12 +140,13 @@ export default function BulkUploadPage() {
       <div className="bg-gray-50 border rounded-lg p-4 mb-6 text-sm">
         <p className="font-medium mb-2">CSV format (for file upload):</p>
         <code className="block bg-white p-2 rounded border text-xs overflow-x-auto">
-          year,category,question,choice1,choice2,choice3,choice4,correctChoice
+          year,category,question,choice1,choice2,choice3,choice4,correctChoice,imageUrl
         </code>
         <ul className="list-disc list-inside mt-2 text-gray-600">
           <li>Leave <code>year</code> blank for &quot;Reviewer&quot; (no specific year)</li>
           <li><code>correctChoice</code> is a number: 1, 2, 3, or 4</li>
-          <li>You can edit any cell below directly, or click &quot;Add Row&quot; to type a question manually — no CSV needed</li>
+          <li><code>imageUrl</code> is optional — leave blank, paste a link, or use the Upload button below per row</li>
+          <li>You can edit any cell below directly, or click &quot;Add Row&quot; to type a question manually</li>
         </ul>
       </div>
 
@@ -169,7 +198,7 @@ export default function BulkUploadPage() {
                     <th
                       key={col}
                       className={`text-left p-2 border-b whitespace-nowrap ${
-                        col === "question" ? "w-[300px]" : "w-[130px]"
+                        col === "question" ? "w-[300px]" : col === "imageUrl" ? "w-[160px]" : "w-[130px]"
                       }`}
                     >
                       {col}
@@ -185,7 +214,9 @@ export default function BulkUploadPage() {
                     {COLUMNS.map((col) => (
                       <td
                         key={col}
-                        className={`p-1 align-top ${col === "question" ? "w-[300px]" : "w-[130px]"}`}
+                        className={`p-1 align-top ${
+                          col === "question" ? "w-[300px]" : col === "imageUrl" ? "w-[160px]" : "w-[130px]"
+                        }`}
                       >
                         {col === "question" ? (
                           <textarea
@@ -232,6 +263,30 @@ export default function BulkUploadPage() {
                             <option value="3">3</option>
                             <option value="4">4</option>
                           </select>
+                        ) : col === "imageUrl" ? (
+                          <div className="space-y-1">
+                            {row.imageUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={row.imageUrl}
+                                alt="preview"
+                                className="w-12 h-12 object-cover rounded border"
+                              />
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleImageFile(i, file);
+                              }}
+                              disabled={uploadingRowIndex === i}
+                              className="text-xs w-full"
+                            />
+                            {uploadingRowIndex === i && (
+                              <p className="text-xs text-gray-400">Uploading...</p>
+                            )}
+                          </div>
                         ) : (
                           <input
                             value={row[col] ?? ""}

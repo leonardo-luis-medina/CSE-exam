@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import ImageUpload from "../ImageUpload";
 
 type Category = { id: number; name: string };
 type Year = { id: number; year: number };
 
 export default function NewQuestionPage() {
-  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<Year[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [yearId, setYearId] = useState("");
   const [text, setText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [choices, setChoices] = useState([
     { text: "", isCorrect: false },
     { text: "", isCorrect: false },
@@ -40,6 +40,7 @@ export default function NewQuestionPage() {
 
   const resetForm = () => {
     setText("");
+    setImageUrl("");
     setChoices([
       { text: "", isCorrect: false },
       { text: "", isCorrect: false },
@@ -69,7 +70,7 @@ export default function NewQuestionPage() {
     const res = await fetch("/api/questions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, categoryId, yearId, choices }),
+      body: JSON.stringify({ text, categoryId, yearId, choices, imageUrl }),
     });
 
     if (!res.ok) {
@@ -114,11 +115,13 @@ export default function NewQuestionPage() {
           </select>
         </div>
 
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
+
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Question text"
-          className="border rounded px-3 py-2 w-full h-24"
+          className="border rounded px-3 py-2 w-full h-40 text-base leading-relaxed"
         />
 
         <div className="space-y-2">

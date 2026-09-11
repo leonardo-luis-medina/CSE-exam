@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 type ChoiceItem = { id: number; text: string; isCorrect: boolean };
-type QuestionItem = { id: number; text: string; choices: ChoiceItem[] };
+type QuestionItem = { id: number; text: string; imageUrl?: string | null; choices: ChoiceItem[] };
 type CategoryBlock = { id: number; name: string; questions: QuestionItem[] };
 
 type AnswerRecord = { selectedChoiceId: number; correct: boolean };
@@ -207,6 +207,14 @@ function QuizContent() {
         <p className="text-xs text-gray-400 mb-2">
           {activeCategory.name} — Question {activeIndex + 1} of {activeCategory.questions.length}
         </p>
+        {activeQuestion.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={activeQuestion.imageUrl}
+            alt="Question"
+            className="w-full max-h-64 object-contain rounded mb-4 border"
+          />
+        )}
         <p className="text-lg font-medium mb-6">{activeQuestion.text}</p>
 
         <div className="space-y-3">

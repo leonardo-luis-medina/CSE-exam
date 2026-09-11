@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (unauthorized) return unauthorized;
 
   const body = await req.json();
-  const { text, categoryId, yearId, choices } = body;
+  const { text, categoryId, yearId, choices, imageUrl } = body;
 
   if (!text || !categoryId || !Array.isArray(choices) || choices.length !== 4) {
     return NextResponse.json({ error: "Invalid question data" }, { status: 400 });
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
   const question = await prisma.question.create({
     data: {
       text,
+      imageUrl: imageUrl || null,
       categoryId: parseInt(categoryId),
       ...(yearId ? { yearId: parseInt(yearId) } : {}),
       choices: {

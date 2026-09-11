@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import ImageUpload from "../../ImageUpload";
 
 type Category = { id: number; name: string };
 type Year = { id: number; year: number };
@@ -16,6 +17,7 @@ export default function EditQuestionPage() {
   const [categoryId, setCategoryId] = useState("");
   const [yearId, setYearId] = useState("");
   const [text, setText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [choices, setChoices] = useState([
     { text: "", isCorrect: false },
     { text: "", isCorrect: false },
@@ -37,6 +39,7 @@ export default function EditQuestionPage() {
       setYears(yearRes);
 
       setText(qRes.text);
+      setImageUrl(qRes.imageUrl || "");
       setCategoryId(qRes.categoryId.toString());
       setYearId(qRes.yearId ? qRes.yearId.toString() : "");
       setChoices(
@@ -82,7 +85,7 @@ export default function EditQuestionPage() {
     const res = await fetch(`/api/questions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, categoryId, yearId, choices }),
+      body: JSON.stringify({ text, categoryId, yearId, choices, imageUrl }),
     });
 
     if (!res.ok) {
@@ -128,6 +131,8 @@ export default function EditQuestionPage() {
             ))}
           </select>
         </div>
+
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
         <textarea
           value={text}

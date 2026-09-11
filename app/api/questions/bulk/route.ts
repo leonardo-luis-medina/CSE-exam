@@ -11,6 +11,7 @@ type BulkRow = {
   choice3: string;
   choice4: string;
   correctChoice: string;
+  imageUrl?: string;
 };
 
 export async function POST(req: Request) {
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
     text: string;
     categoryId: number;
     yearId?: number;
+    imageUrl?: string;
     choices: { text: string; isCorrect: boolean }[];
   }[] = [];
 
@@ -84,6 +86,7 @@ export async function POST(req: Request) {
       text: row.question.trim(),
       categoryId,
       yearId,
+      imageUrl: row.imageUrl?.trim() || undefined,
       choices,
     });
   });
@@ -99,6 +102,7 @@ export async function POST(req: Request) {
         text: q.text,
         categoryId: q.categoryId,
         yearId: q.yearId,
+        imageUrl: q.imageUrl,
         choices: { create: q.choices },
       },
     });

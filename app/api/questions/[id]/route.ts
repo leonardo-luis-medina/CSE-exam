@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/require-admin";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const { id } = await params;
   const question = await prisma.question.findUnique({
     where: { id: parseInt(id) },
@@ -20,9 +24,12 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const { id } = await params;
   const body = await req.json();
-  const { text, categoryId, yearId, choices } = body;
+  const { text, categoryId, yearId, choices, imageUrl } = body;
 
   if (!text || !categoryId || !Array.isArray(choices) || choices.length !== 4) {
     return NextResponse.json({ error: "Invalid question data" }, { status: 400 });
@@ -35,13 +42,13 @@ export async function PATCH(
 
   const questionId = parseInt(id);
 
-  // Delete old choices and recreate them (simplest reliable approach for a fixed 4-choice question)
   await prisma.choice.deleteMany({ where: { questionId } });
 
   const updated = await prisma.question.update({
     where: { id: questionId },
     data: {
       text,
+      imageUrl: imageUrl || null,
       categoryId: parseInt(categoryId),
       ...(yearId ? { yearId: parseInt(yearId) } : { yearId: null }),
       choices: {
@@ -61,6 +68,9 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const { id } = await params;
   await prisma.question.delete({ where: { id: parseInt(id) } });
   return NextResponse.json({ success: true });

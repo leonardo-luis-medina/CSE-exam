@@ -96,6 +96,7 @@ export async function GET(req: Request) {
         questions: questions.map((q) => ({
           id: q.id,
           text: q.text,
+          imageUrl: q.imageUrl,
           choices: shuffleArray(
             q.choices.map((c) => ({
               id: c.id,
