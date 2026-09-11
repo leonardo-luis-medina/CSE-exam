@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/require-admin";
 
 export async function GET() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const questions = await prisma.question.findMany({
     include: { category: true, year: true, choices: true },
     orderBy: { createdAt: "desc" },
@@ -10,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const body = await req.json();
   const { text, categoryId, yearId, choices } = body;
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/require-admin";
 
 type BulkRow = {
   year?: string;
@@ -13,6 +14,9 @@ type BulkRow = {
 };
 
 export async function POST(req: Request) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   const { rows }: { rows: BulkRow[] } = await req.json();
 
   if (!Array.isArray(rows) || rows.length === 0) {
