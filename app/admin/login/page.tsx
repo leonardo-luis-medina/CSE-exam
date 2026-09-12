@@ -28,13 +28,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm"
-      >
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
-
+    <div className="min-h-screen flex items-center justify-center">
+  <form
+    onSubmit={handleSubmit}
+    className="glass-card p-8 rounded-lg w-full max-w-sm"
+  >
+    <h1 className="text-2xl font-bold mb-6 text-center text-gray-900">Admin Login</h1>
         {error && (
           <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
         )}

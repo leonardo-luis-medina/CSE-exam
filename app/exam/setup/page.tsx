@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import PublicHeader from "../../PublicHeader";
 
 type Category = { id: number; name: string };
 type Year = { id: number; year: number };
@@ -123,7 +124,9 @@ function SetupContent() {
       : selectedYearTags.map((t) => (t === "reviewer" ? "Reviewer" : t)).join(", ");
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
+    <div>
+      <PublicHeader backHref="/" backLabel="Back to Exam Selection" />
+      <div className="max-w-2xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-2">Set Up Your Exam</h1>
       <p className="text-gray-500 mb-6">
         {examId
@@ -233,10 +236,11 @@ function SetupContent() {
 
       <button
         onClick={handleStart}
-        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium w-full"
+        className="btn-primary px-6 py-3 rounded-lg font-medium w-full"
       >
         Start Exam
       </button>
+      </div>
     </div>
   );
 }

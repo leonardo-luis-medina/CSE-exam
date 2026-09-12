@@ -273,19 +273,19 @@ export default function BulkUploadPage() {
                                 className="w-12 h-12 object-cover rounded border"
                               />
                             )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleImageFile(i, file);
-                              }}
-                              disabled={uploadingRowIndex === i}
-                              className="text-xs w-full"
-                            />
-                            {uploadingRowIndex === i && (
-                              <p className="text-xs text-gray-400">Uploading...</p>
-                            )}
+                            <label className="upload-button-compact block text-center">
+                              {uploadingRowIndex === i ? "Uploading..." : "Upload"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleImageFile(i, file);
+                                }}
+                                disabled={uploadingRowIndex === i}
+                                className="hidden"
+                              />
+                            </label>
                           </div>
                         ) : (
                           <input

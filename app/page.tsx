@@ -18,6 +18,7 @@ export default function HomePage() {
 
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/exams")
@@ -26,6 +27,9 @@ export default function HomePage() {
         setExams(data);
         setLoading(false);
       });
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => setLogoUrl(data.logoUrl || null));
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -36,22 +40,27 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="border-b">
+      <div className="border-b border-white/10">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="flex items-center gap-2 font-semibold text-gray-900">
-            <span className="w-7 h-7 rounded-md bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
-              R
-            </span>
+          <span className="flex items-center gap-2 font-semibold text-white">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Logo" className="w-7 h-7 rounded-md object-cover" />
+            ) : (
+              <span className="w-7 h-7 rounded-md bg-orange-500 text-white text-xs flex items-center justify-center font-bold">
+                R
+              </span>
+            )}
             ReviewerHub
           </span>
           {isAdmin ? (
             <div className="flex items-center gap-4 text-sm">
-              <Link href="/admin" className="text-gray-600 hover:text-gray-900">
+              <Link href="/admin" className="text-blue-300 hover:text-white">
                 Admin Panel
               </Link>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-red-500 hover:text-red-700"
+                className="text-orange-400 hover:text-orange-300"
               >
                 Log Out
               </button>
@@ -59,7 +68,7 @@ export default function HomePage() {
           ) : (
             <Link
               href="/admin/login"
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm text-blue-300 hover:text-white"
             >
               Admin Log In
             </Link>
@@ -68,11 +77,11 @@ export default function HomePage() {
       </div>
 
       <header className="text-center pt-14 pb-10 px-6">
-        <p className="text-sm font-medium text-blue-600 mb-2 tracking-wide uppercase">
+        <p className="text-sm font-medium text-orange-400 mb-2 tracking-wide uppercase">
           Free Practice Reviewers
         </p>
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">ReviewerHub</h1>
-        <p className="text-gray-600 max-w-lg mx-auto">
+        <h1 className="text-4xl font-bold text-white mb-3">ReviewerHub</h1>
+        <p className="text-blue-100/80 max-w-lg mx-auto">
           Pick a reviewer below to start practicing with randomized questions and
           instant feedback.
         </p>

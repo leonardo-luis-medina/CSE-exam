@@ -41,7 +41,7 @@ export default function AdminNav() {
                 R
               </span>
             )}
-            <span className="text-sm font-medium hidden sm:inline text-gray-700">Home</span>
+            <span className="text-sm font-medium hidden sm:inline text-white">Home</span>
           </Link>
 
           {LINKS.map((link) => {
@@ -55,8 +55,8 @@ export default function AdminNav() {
                 href={link.href}
                 className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                   isActive
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-600 hover:bg-white/70"
+                    ? "bg-orange-500 text-white"
+                    : "text-gray-200 hover:bg-white/10"
                 }`}
               >
                 {link.label}
@@ -69,13 +69,13 @@ export default function AdminNav() {
           <Link
             href="/admin/settings"
             title="Settings"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-white/70 hover:text-gray-800 transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
           >
             ⚙️
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            className="text-sm text-red-500 hover:text-red-600 whitespace-nowrap"
+            className="text-sm text-orange-300 hover:text-orange-200 whitespace-nowrap"
           >
             Log Out
           </button>

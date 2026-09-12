@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PublicHeader from "../../PublicHeader";
 
 type ChoiceItem = { id: number; text: string; isCorrect: boolean };
 type QuestionItem = { id: number; text: string; imageUrl?: string | null; choices: ChoiceItem[] };
@@ -206,16 +207,26 @@ function QuizContent() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {remainingSeconds !== null && (
-        <div
-          className={`text-center mb-4 font-mono text-lg font-semibold ${
-            remainingSeconds <= 60 ? "text-red-500" : "text-gray-700"
-          }`}
+    <div>
+      <PublicHeader />
+      <div className="max-w-2xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-4">
+        {remainingSeconds !== null && (
+          <div className="font-mono text-lg font-semibold text-red-500">
+            ⏱ {formatTime(remainingSeconds)}
+          </div>
+        )}
+        <button
+          onClick={() => {
+            if (confirm("Cancel this exam and return to the homepage?")) {
+              window.location.href = "/";
+            }
+          }}
+          className="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-400 rounded-full px-3 py-1 transition-colors font-medium"
         >
-          ⏱ {formatTime(remainingSeconds)}
-        </div>
-      )}
+          Cancel Exam
+        </button>
+      </div>
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -226,16 +237,17 @@ function QuizContent() {
           return (
             <button
               key={cat.id}
-              onClick={() => handleTabClick(cat.id)}
+              onClick={() => !isDone && handleTabClick(cat.id)}
+              disabled={isDone}
               className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
-                isActive
+                isDone
+                  ? "tab-locked bg-green-50 text-green-700 border-green-300"
+                  : isActive
                   ? "bg-blue-600 text-white border-blue-600"
-                  : isDone
-                  ? "bg-green-50 text-green-700 border-green-300"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
             >
-              {cat.name} {answeredCount}/{cat.questions.length}
+              {cat.name} {answeredCount}/{cat.questions.length} {isDone && "✓"}
             </button>
           );
         })}
@@ -301,6 +313,7 @@ function QuizContent() {
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
