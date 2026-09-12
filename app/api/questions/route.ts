@@ -33,8 +33,8 @@ export async function POST(req: Request) {
     data: {
       text,
       imageUrl: imageUrl || null,
-      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(yearId ? { yearId: parseInt(yearId) } : {}),
+      category: categoryId ? { connect: { id: parseInt(categoryId) } } : undefined,
+      year: yearId ? { connect: { id: parseInt(yearId) } } : undefined,
       choices: {
         create: choices.map((c: { text: string; isCorrect: boolean }) => ({
           text: c.text,

@@ -49,8 +49,12 @@ export async function PATCH(
     data: {
       text,
       imageUrl: imageUrl || null,
-      categoryId: categoryId ? parseInt(categoryId) : null,
-      yearId: yearId ? parseInt(yearId) : null,
+      category: categoryId
+        ? { connect: { id: parseInt(categoryId) } }
+        : { disconnect: true },
+      year: yearId
+        ? { connect: { id: parseInt(yearId) } }
+        : { disconnect: true },
       choices: {
         create: choices.map((c: { text: string; isCorrect: boolean }) => ({
           text: c.text,
