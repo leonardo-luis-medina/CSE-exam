@@ -85,72 +85,74 @@ export default function NewQuestionPage() {
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Add Question</h1>
+      <div className="glass-card rounded-2xl p-8">
+        <h1 className="text-2xl font-bold mb-6 text-gray-900">Add Question</h1>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {success && <p className="text-green-600 mb-4">Question saved!</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {success && <p className="text-green-600 mb-4">Question saved!</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex gap-4">
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="border rounded px-3 py-2 flex-1"
-          >
-            <option value="">Select Category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex gap-4">
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
+            >
+              <option value="">Select Category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+
+            <select
+              value={yearId}
+              onChange={(e) => setYearId(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
+            >
+              <option value="">Reviewer</option>
+              {years.map((y) => (
+                <option key={y.id} value={y.id}>{y.year}</option>
+              ))}
+            </select>
+          </div>
+
+          <ImageUpload value={imageUrl} onChange={setImageUrl} />
+
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Question text"
+            className="border border-gray-300 rounded px-3 py-2 w-full h-40 text-base leading-relaxed bg-white text-gray-900"
+          />
+
+          <div className="space-y-2">
+            {choices.map((choice, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="correct"
+                  checked={choice.isCorrect}
+                  onChange={() => setCorrect(i)}
+                />
+                <input
+                  type="text"
+                  value={choice.text}
+                  onChange={(e) => updateChoiceText(i, e.target.value)}
+                  placeholder={`Choice ${i + 1}`}
+                  className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
+                />
+              </div>
             ))}
-          </select>
+          </div>
 
-          <select
-            value={yearId}
-            onChange={(e) => setYearId(e.target.value)}
-            className="border rounded px-3 py-2 flex-1"
+          <button
+            type="submit"
+            className="btn-primary px-6 py-2 rounded font-medium"
           >
-            <option value="">Reviewer</option>
-            {years.map((y) => (
-              <option key={y.id} value={y.id}>{y.year}</option>
-            ))}
-          </select>
-        </div>
-
-        <ImageUpload value={imageUrl} onChange={setImageUrl} />
-
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Question text"
-          className="border rounded px-3 py-2 w-full h-40 text-base leading-relaxed"
-        />
-
-        <div className="space-y-2">
-          {choices.map((choice, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="correct"
-                checked={choice.isCorrect}
-                onChange={() => setCorrect(i)}
-              />
-              <input
-                type="text"
-                value={choice.text}
-                onChange={(e) => updateChoiceText(i, e.target.value)}
-                placeholder={`Choice ${i + 1}`}
-                className="border rounded px-3 py-2 flex-1"
-              />
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          Save Question
-        </button>
-      </form>
+            Save Question
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
