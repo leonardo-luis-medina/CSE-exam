@@ -23,9 +23,9 @@ model Question {
   id         Int      @id @default(autoincrement())
   text       String
   imageUrl   String?
-  categoryId Int
+  categoryId Int?
   yearId     Int?
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
   year       Year?    @relation(fields: [yearId], references: [id])
   choices    Choice[]
   createdAt  DateTime @default(now())
@@ -72,3 +72,4 @@ model Settings {
   id      Int     @id @default(1)
   logoUrl String?
 }
+

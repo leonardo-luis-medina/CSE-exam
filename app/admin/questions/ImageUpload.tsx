@@ -61,7 +61,7 @@ export default function ImageUpload({ value, onChange }: Props) {
       {value && (
         <div className="mb-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Preview" className="w-32 h-32 object-cover rounded border" />
+          <img src={value} alt="Preview" className="w-32 h-32 object-contain rounded border bg-gray-50 p-1" />
           <button
             type="button"
             onClick={() => onChange("")}

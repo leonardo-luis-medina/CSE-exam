@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PublicHeader from "../../PublicHeader";
+import { renderWithBold } from "@/lib/renderWithBold";
 
 type ChoiceItem = { id: number; text: string; isCorrect: boolean };
 type QuestionItem = { id: number; text: string; imageUrl?: string | null; choices: ChoiceItem[] };
@@ -193,6 +194,7 @@ function QuizContent() {
   };
 
   const handleTabClick = (catId: number) => {
+    if (showFeedback) return; // must click Next before switching categories
     setActiveCategoryId(catId);
     setSelectedChoiceId(null);
     setShowFeedback(false);
@@ -238,12 +240,14 @@ function QuizContent() {
             <button
               key={cat.id}
               onClick={() => !isDone && handleTabClick(cat.id)}
-              disabled={isDone}
+              disabled={isDone || showFeedback}
               className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
                 isDone
                   ? "tab-locked bg-green-50 text-green-700 border-green-300"
                   : isActive
                   ? "bg-blue-600 text-white border-blue-600"
+                  : showFeedback
+                  ? "opacity-50 cursor-not-allowed bg-white text-gray-400 border-gray-200"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
               }`}
             >
@@ -266,7 +270,7 @@ function QuizContent() {
             className="w-full max-h-64 object-contain rounded mb-4 border"
           />
         )}
-        <p className="text-lg font-medium mb-6">{activeQuestion.text}</p>
+        <p className="text-lg font-medium mb-6" dangerouslySetInnerHTML={{ __html: renderWithBold(activeQuestion.text) }} />
 
         <div className="space-y-3">
           {activeQuestion.choices.map((choice) => {

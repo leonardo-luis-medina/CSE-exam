@@ -64,7 +64,7 @@ export default function ImageUpload({ value, onChange }: Props) {
           <img
             src={value}
             alt="Preview"
-            className="w-32 h-32 object-cover rounded border"
+            className="w-32 h-32 object-contain rounded border bg-gray-50 p-1"
           />
           <button
             type="button"

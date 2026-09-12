@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { text, categoryId, yearId, choices, imageUrl } = body;
 
-  if (!text || !categoryId || !Array.isArray(choices) || choices.length !== 4) {
+  if (!text || !Array.isArray(choices) || choices.length !== 4) {
     return NextResponse.json({ error: "Invalid question data" }, { status: 400 });
   }
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     data: {
       text,
       imageUrl: imageUrl || null,
-      categoryId: parseInt(categoryId),
+      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(yearId ? { yearId: parseInt(yearId) } : {}),
       choices: {
         create: choices.map((c: { text: string; isCorrect: boolean }) => ({

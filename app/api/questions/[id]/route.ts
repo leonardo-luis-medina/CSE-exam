@@ -31,7 +31,7 @@ export async function PATCH(
   const body = await req.json();
   const { text, categoryId, yearId, choices, imageUrl } = body;
 
-  if (!text || !categoryId || !Array.isArray(choices) || choices.length !== 4) {
+  if (!text || !Array.isArray(choices) || choices.length !== 4) {
     return NextResponse.json({ error: "Invalid question data" }, { status: 400 });
   }
 
@@ -49,8 +49,8 @@ export async function PATCH(
     data: {
       text,
       imageUrl: imageUrl || null,
-      categoryId: parseInt(categoryId),
-      ...(yearId ? { yearId: parseInt(yearId) } : { yearId: null }),
+      categoryId: categoryId ? parseInt(categoryId) : null,
+      yearId: yearId ? parseInt(yearId) : null,
       choices: {
         create: choices.map((c: { text: string; isCorrect: boolean }) => ({
           text: c.text,

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ImageUpload from "../ImageUpload";
+import CategorySelect from "../../CategorySelect";
 
-type Category = { id: number; name: string };
 type Year = { id: number; year: number };
 
 export default function NewQuestionPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<Year[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [yearId, setYearId] = useState("");
@@ -21,9 +20,9 @@ export default function NewQuestionPage() {
   ]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    fetch("/api/categories").then((r) => r.json()).then(setCategories);
     fetch("/api/years").then((r) => r.json()).then(setYears);
   }, []);
 
@@ -49,13 +48,33 @@ export default function NewQuestionPage() {
     ]);
   };
 
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+      e.preventDefault();
+      const el = textareaRef.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const before = text.slice(0, start);
+      const selected = text.slice(start, end);
+      const after = text.slice(end);
+      const newText = `${before}**${selected || "bold text"}**${after}`;
+      setText(newText);
+      setTimeout(() => {
+        el.focus();
+        el.selectionStart = start + 2;
+        el.selectionEnd = start + 2 + (selected || "bold text").length;
+      }, 0);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    if (!categoryId || !text.trim()) {
-      setError("Please fill in category and question text.");
+    if (!text.trim()) {
+      setError("Please enter question text.");
       return;
     }
     if (choices.some((c) => !c.text.trim())) {
@@ -93,16 +112,7 @@ export default function NewQuestionPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-4">
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
-            >
-              <option value="">Select Category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <CategorySelect value={categoryId} onChange={setCategoryId} />
 
             <select
               value={yearId}
@@ -118,12 +128,19 @@ export default function NewQuestionPage() {
 
           <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Question text"
-            className="border border-gray-300 rounded px-3 py-2 w-full h-40 text-base leading-relaxed bg-white text-gray-900"
-          />
+          <div>
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleTextKeyDown}
+              placeholder="Question text"
+              className="border border-gray-300 rounded px-3 py-2 w-full h-40 text-base leading-relaxed bg-white text-gray-900"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Tip: select text and press Ctrl+B (Cmd+B on Mac) to make it bold.
+            </p>
+          </div>
 
           <div className="space-y-2">
             {choices.map((choice, i) => (
