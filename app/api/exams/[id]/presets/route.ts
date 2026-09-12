@@ -7,8 +7,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const { searchParams } = new URL(req.url);
+  const includeHidden = searchParams.get("all") === "true";
+
   const presets = await prisma.examPreset.findMany({
-    where: { examId: parseInt(id) },
+    where: { examId: parseInt(id), ...(includeHidden ? {} : { hidden: false }) },
     orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
   return NextResponse.json(presets);

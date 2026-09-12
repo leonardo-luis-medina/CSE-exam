@@ -72,13 +72,16 @@ export default function ImageUpload({ value, onChange }: Props) {
         </div>
       )}
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFile}
-        disabled={uploading}
-        className="text-sm"
-      />
+      <label className="upload-button">
+        Choose Image
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+          disabled={uploading}
+          className="hidden"
+        />
+      </label>
 
       {uploading && <p className="text-xs text-gray-500 mt-1">Uploading...</p>}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}

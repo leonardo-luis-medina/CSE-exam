@@ -23,7 +23,16 @@ export async function PATCH(
 
   const { presetId } = await params;
   const body = await req.json();
-  const { name, config } = body;
+  const { name, config, hidden } = body;
+
+  // Toggle-only request (just flipping hidden, e.g. from the list page)
+  if (hidden !== undefined && name === undefined && config === undefined) {
+    const preset = await prisma.examPreset.update({
+      where: { id: parseInt(presetId) },
+      data: { hidden },
+    });
+    return NextResponse.json(preset);
+  }
 
   if (!name || !config) {
     return NextResponse.json({ error: "Name and config are required" }, { status: 400 });
@@ -31,7 +40,11 @@ export async function PATCH(
 
   const preset = await prisma.examPreset.update({
     where: { id: parseInt(presetId) },
-    data: { name, config: JSON.stringify(config) },
+    data: {
+      name,
+      config: JSON.stringify(config),
+      ...(hidden !== undefined ? { hidden } : {}),
+    },
   });
 
   return NextResponse.json(preset);

@@ -25,6 +25,8 @@ function QuizContent() {
   const [answers, setAnswers] = useState<Record<number, AnswerRecord>>({});
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [timeUp, setTimeUp] = useState(false);
 
   const loadExam = async () => {
     setLoading(true);
@@ -49,6 +51,9 @@ function QuizContent() {
     setSelectedChoiceId(null);
     setShowFeedback(false);
     setActiveCategoryId(data.length > 0 ? data[0].id : null);
+    setTimeUp(false);
+    const totalQ = data.reduce((sum, cat) => sum + cat.questions.length, 0);
+    setRemainingSeconds(totalQ > 0 ? totalQ * 60 : null);
     setLoading(false);
   };
 
@@ -56,6 +61,21 @@ function QuizContent() {
     loadExam();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presetId, examId, categoriesParam, yearsParam]);
+
+  useEffect(() => {
+    if (remainingSeconds === null || remainingSeconds <= 0 || timeUp) return;
+    const timer = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev === null) return null;
+        if (prev <= 1) {
+          setTimeUp(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [remainingSeconds !== null, timeUp]);
 
   if (loading) {
     return <div className="p-8 text-center">Loading exam...</div>;
@@ -71,7 +91,7 @@ function QuizContent() {
 
   const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
   const totalAnswered = Object.keys(answers).length;
-  const examComplete = totalAnswered === totalQuestions;
+  const examComplete = totalAnswered === totalQuestions || timeUp;
 
   // ---------- RESULTS SCREEN ----------
   if (examComplete) {
@@ -81,6 +101,9 @@ function QuizContent() {
     return (
       <div className="max-w-2xl mx-auto p-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Exam Complete!</h1>
+        {timeUp && totalAnswered < totalQuestions && (
+          <p className="text-orange-500 text-sm mb-2">Time&apos;s up! Unanswered questions were left blank.</p>
+        )}
         <p className="text-6xl font-bold text-blue-600 my-6">
           {totalCorrect} / {totalQuestions}
         </p>
@@ -176,8 +199,24 @@ function QuizContent() {
 
   const correctChoice = activeQuestion.choices.find((c) => c.isCorrect);
 
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
+      {remainingSeconds !== null && (
+        <div
+          className={`text-center mb-4 font-mono text-lg font-semibold ${
+            remainingSeconds <= 60 ? "text-red-500" : "text-gray-700"
+          }`}
+        >
+          ⏱ {formatTime(remainingSeconds)}
+        </div>
+      )}
+
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {categories.map((cat) => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
-type Preset = { id: number; name: string; createdAt: string };
+type Preset = { id: number; name: string; createdAt: string; hidden: boolean };
 type Exam = { id: number; name: string };
 
 export default function ExamPresetsPage() {
@@ -20,7 +20,7 @@ export default function ExamPresetsPage() {
     setLoading(true);
     const [examData, presetData] = await Promise.all([
       fetch(`/api/exams/${examId}`).then((r) => r.json()),
-      fetch(`/api/exams/${examId}/presets`).then((r) => r.json()),
+      fetch(`/api/exams/${examId}/presets?all=true`).then((r) => r.json()),
     ]);
     setExam(examData);
     setPresets(presetData);
@@ -35,6 +35,17 @@ export default function ExamPresetsPage() {
     if (!confirm("Delete this preset?")) return;
     await fetch(`/api/exams/${examId}/presets/${presetId}`, { method: "DELETE" });
     load();
+  };
+
+  const toggleHidden = async (preset: Preset) => {
+    await fetch(`/api/exams/${examId}/presets/${preset.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden: !preset.hidden }),
+    });
+    setPresets((prev) =>
+      prev.map((p) => (p.id === preset.id ? { ...p, hidden: !p.hidden } : p))
+    );
   };
 
   const persistOrder = async (newList: Preset[]) => {
@@ -66,7 +77,8 @@ export default function ExamPresetsPage() {
     <div className="p-8 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Presets for &quot;{exam?.name}&quot;</h1>
       <p className="text-gray-500 text-sm mb-6">
-        Drag to reorder. These show up in the dropdown on this exam&apos;s homepage card.
+        Drag to reorder. Hidden presets won&apos;t show in the visitor dropdown, but their
+        categories remain pickable under Custom.
       </p>
 
       <Link
@@ -90,13 +102,21 @@ export default function ExamPresetsPage() {
             onDrop={() => handleDrop(preset.id)}
             className={`border rounded-lg p-4 flex justify-between items-center cursor-move transition-opacity ${
               dragId === preset.id ? "opacity-40" : ""
-            }`}
+            } ${preset.hidden ? "bg-gray-50" : ""}`}
           >
             <div>
-              <p className="font-medium">{preset.name}</p>
+              <p className={`font-medium ${preset.hidden ? "text-gray-400" : ""}`}>
+                {preset.name} {preset.hidden && <span className="text-xs">(hidden)</span>}
+              </p>
               <p className="text-xs text-gray-400">Created: {formatDate(preset.createdAt)}</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={() => toggleHidden(preset)}
+                className="text-xs px-2 py-1 rounded border text-gray-600 hover:bg-gray-100"
+              >
+                {preset.hidden ? "Show" : "Hide"}
+              </button>
               <Link
                 href={`/admin/exams/${examId}/presets/${preset.id}/edit`}
                 className="text-blue-500 hover:text-blue-700 text-sm"
@@ -114,8 +134,8 @@ export default function ExamPresetsPage() {
         ))}
       </div>
 
-      <Link href="/admin/exams" className="block mt-8 text-sm text-gray-500 hover:underline">
-        ← Back to all exams
+      <Link href="/admin" className="block mt-8 text-sm text-gray-500 hover:underline">
+        ← Back to dashboard
       </Link>
     </div>
   );
