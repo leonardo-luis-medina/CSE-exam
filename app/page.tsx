@@ -89,7 +89,7 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 pb-16">
         {loading ? (
-          <p className="text-center text-gray-500">Loading reviewers...</p>
+          <p className="text-center text-blue-100/70">Loading reviewers...</p>
         ) : (
           <>
             <ExamSection
@@ -112,8 +112,8 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-gray-400 py-6">
-        CSE Exam Reviewer · Built for Civil Service Exam practice
+      <footer className="text-center text-xs text-blue-200/50 py-6">
+        ReviewerHub · Built for Civil Service Exam practice
       </footer>
     </div>
   );
