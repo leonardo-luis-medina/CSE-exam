@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { questionSchema } from "@/lib/schemas/question";
 
 export async function GET() {
   const unauthorized = await requireAdmin();
@@ -20,14 +21,21 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { text, categoryId, yearId, choices, imageUrl } = body;
 
-  if (!text || !Array.isArray(choices) || choices.length !== 4) {
-    return NextResponse.json({ error: "Invalid question data" }, { status: 400 });
-  }
+  
 
-  const correctCount = choices.filter((c: { isCorrect: boolean }) => c.isCorrect).length;
-  if (correctCount !== 1) {
-    return NextResponse.json({ error: "Exactly one choice must be marked correct" }, { status: 400 });
-  }
+
+const parsed = questionSchema.safeParse(body);
+if (!parsed.success) {
+  return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+}
+
+
+
+
+
+
+
+
 
   const question = await prisma.question.create({
     data: {
