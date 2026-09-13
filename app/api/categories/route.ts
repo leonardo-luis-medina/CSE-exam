@@ -11,10 +11,12 @@ export async function POST(req: Request) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const { name } = await req.json();
+  const { name, group } = await req.json();
   if (!name || typeof name !== "string") {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
-  const category = await prisma.category.create({ data: { name } });
+  const category = await prisma.category.create({
+    data: { name, group: group?.trim() || null },
+  });
   return NextResponse.json(category);
 }

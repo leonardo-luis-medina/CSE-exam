@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-type Category = { id: number; name: string };
+type Category = { id: number; name: string; group: string | null };
 type Year = { id: number; year: number };
 
 export default function SetupPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [years, setYears] = useState<Year[]>([]);
   const [newCategory, setNewCategory] = useState("");
+  const [newGroup, setNewGroup] = useState("");
   const [newYear, setNewYear] = useState("");
 
   const loadData = async () => {
@@ -27,9 +28,10 @@ export default function SetupPage() {
     await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCategory }),
+      body: JSON.stringify({ name: newCategory, group: newGroup }),
     });
     setNewCategory("");
+    setNewGroup("");
     loadData();
   };
 
@@ -51,24 +53,46 @@ export default function SetupPage() {
 
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-2 text-gray-800">Categories</h2>
-          <div className="flex gap-2 mb-3">
+
+          <div className="space-y-2 mb-3">
             <input
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="e.g. Verbal Reasoning"
-              className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
+              value={newGroup}
+              onChange={(e) => setNewGroup(e.target.value)}
+              placeholder="Category Group (optional) — e.g. CSE, LTO, NAT"
+              className="border border-gray-300 rounded px-3 py-2 w-full bg-white text-gray-900 text-sm"
             />
-            <button
-              onClick={addCategory}
-              className="btn-primary px-4 py-2 rounded font-medium"
-            >
-              Add
-            </button>
+            <div className="flex gap-2">
+              <input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                placeholder="Category name — e.g. Verbal Reasoning"
+                className="border border-gray-300 rounded px-3 py-2 flex-1 bg-white text-gray-900"
+              />
+              <button
+                onClick={addCategory}
+                className="btn-primary px-4 py-2 rounded font-medium"
+              >
+                Add
+              </button>
+            </div>
           </div>
+
           <ul className="space-y-1">
             {categories.map((c) => (
-              <li key={c.id} className="border border-gray-200 rounded px-3 py-2 bg-white text-gray-800">
-                {c.name}
+              <li
+                key={c.id}
+                className="border border-gray-200 rounded px-3 py-2 bg-white text-gray-800 flex items-center justify-between"
+              >
+                <span>{c.name}</span>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    c.group
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {c.group || "Uncategorized"}
+                </span>
               </li>
             ))}
           </ul>

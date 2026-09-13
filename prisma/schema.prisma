@@ -16,6 +16,7 @@ model Year {
 model Category {
   id        Int        @id @default(autoincrement())
   name      String     @unique
+  group     String?
   questions Question[]
 }
 
