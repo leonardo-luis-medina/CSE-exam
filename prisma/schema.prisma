@@ -26,7 +26,7 @@ model Question {
   imageUrl   String?
   categoryId Int?
   yearId     Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   year       Year?    @relation(fields: [yearId], references: [id])
   choices    Choice[]
   createdAt  DateTime @default(now())

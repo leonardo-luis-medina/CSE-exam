@@ -46,6 +46,17 @@ export default function SetupPage() {
     loadData();
   };
 
+  const deleteCategory = async (id: number) => {
+    if (
+      !confirm(
+        "Delete this category? Questions using it will remain, but become Uncategorized."
+      )
+    )
+      return;
+    await fetch(`/api/categories/${id}`, { method: "DELETE" });
+    loadData();
+  };
+
   return (
     <div className="p-8 max-w-2xl mx-auto">
       <div className="glass-card rounded-2xl p-8">
@@ -84,15 +95,23 @@ export default function SetupPage() {
                 className="border border-gray-200 rounded px-3 py-2 bg-white text-gray-800 flex items-center justify-between"
               >
                 <span>{c.name}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
-                    c.group
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {c.group || "Uncategorized"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      c.group
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {c.group || "Uncategorized"}
+                  </span>
+                  <button
+                    onClick={() => deleteCategory(c.id)}
+                    className="text-red-500 hover:text-red-700 text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

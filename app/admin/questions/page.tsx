@@ -7,19 +7,20 @@ type Choice = { id: number; text: string; isCorrect: boolean };
 type Question = {
   id: number;
   text: string;
-  category: { name: string };
+  category: { name: string; group: string | null } | null;
   year: { year: number } | null;
   choices: Choice[];
   createdAt: string;
 };
 
-type SortMode = "default" | "year" | "category";
+type SortMode = "default" | "year" | "category" | "group";
 
 export default function QuestionListPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [search, setSearch] = useState("");
 
   const [activeYearTags, setActiveYearTags] = useState<string[]>([]);
   const [activeCategoryTags, setActiveCategoryTags] = useState<string[]>([]);
@@ -57,7 +58,7 @@ export default function QuestionListPage() {
 
   const availableCategories = useMemo(() => {
     const set = new Set<string>();
-    questions.forEach((q) => set.add(q.category.name));
+    questions.forEach((q) => set.add(q.category ? q.category.name : "Uncategorized"));
     return Array.from(set).sort();
   }, [questions]);
 
@@ -80,11 +81,14 @@ export default function QuestionListPage() {
 
   const filteredQuestions = questions.filter((q) => {
     const yearLabel = q.year ? q.year.year.toString() : "Reviewer";
+    const categoryLabel = q.category ? q.category.name : "Uncategorized";
     const yearMatch =
       activeYearTags.length === 0 || activeYearTags.includes(yearLabel);
     const categoryMatch =
-      activeCategoryTags.length === 0 || activeCategoryTags.includes(q.category.name);
-    return yearMatch && categoryMatch;
+      activeCategoryTags.length === 0 || activeCategoryTags.includes(categoryLabel);
+    const searchMatch =
+      search.trim() === "" || q.text.toLowerCase().includes(search.toLowerCase());
+    return yearMatch && categoryMatch && searchMatch;
   });
 
   const sortedQuestions = [...filteredQuestions].sort((a, b) => {
@@ -94,7 +98,14 @@ export default function QuestionListPage() {
       return yearB - yearA;
     }
     if (sortMode === "category") {
-      return a.category.name.localeCompare(b.category.name);
+      const catA = a.category?.name || "Uncategorized";
+      const catB = b.category?.name || "Uncategorized";
+      return catA.localeCompare(catB);
+    }
+    if (sortMode === "group") {
+      const groupA = a.category?.group || "Uncategorized";
+      const groupB = b.category?.group || "Uncategorized";
+      return groupA.localeCompare(groupB);
     }
     return 0;
   });
@@ -115,6 +126,13 @@ export default function QuestionListPage() {
             + Add Question
           </Link>
         </div>
+
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search question text..."
+          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm mb-5 bg-white text-gray-900"
+        />
 
         <div className="mb-4 space-y-3">
           <div>
@@ -199,6 +217,7 @@ export default function QuestionListPage() {
             <option value="default">Default (Newest Added)</option>
             <option value="year">Year</option>
             <option value="category">Category</option>
+            <option value="group">Category Group</option>
           </select>
         </div>
 
@@ -220,7 +239,10 @@ export default function QuestionListPage() {
                 <div>
                   <p className="font-medium text-gray-900">{q.text}</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {q.category.name} · {q.year ? q.year.year : "Reviewer"}
+                    {q.category ? q.category.name : "Uncategorized"}
+                    {q.category?.group && ` (${q.category.group})`}
+                    {" · "}
+                    {q.year ? q.year.year : "Reviewer"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 ml-4 shrink-0">

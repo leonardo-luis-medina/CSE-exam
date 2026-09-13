@@ -5,7 +5,7 @@ import Papa from "papaparse";
 import Link from "next/link";
 
 type Row = Record<string, string>;
-type Category = { id: number; name: string };
+type Category = { id: number; name: string; group: string | null };
 type Year = { id: number; year: number };
 
 const COLUMNS = [
@@ -230,18 +230,54 @@ export default function BulkUploadPage() {
                               rows={3}
                             />
                           ) : col === "category" ? (
-                            <select
-                              value={row[col] ?? ""}
-                              onChange={(e) => updateCell(i, col, e.target.value)}
-                              className="w-full border border-gray-300 rounded text-sm px-1 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white text-gray-900"
-                            >
-                              <option value="">Select</option>
-                              {categories.map((c) => (
-                                <option key={c.id} value={c.name}>
-                                  {c.name}
-                                </option>
-                              ))}
-                            </select>
+                            (() => {
+                              const groups = Array.from(
+                                new Set(categories.map((c) => c.group || "Uncategorized"))
+                              ).sort();
+                              const currentCat = categories.find((c) => c.name === row.category);
+                              const currentGroup = currentCat
+                                ? currentCat.group || "Uncategorized"
+                                : "";
+                              const catsInGroup = categories.filter(
+                                (c) => (c.group || "Uncategorized") === currentGroup
+                              );
+                              return (
+                                <div className="space-y-1">
+                                  <select
+                                    value={currentGroup}
+                                    onChange={(e) => {
+                                      // changing group clears the chosen category name until re-picked
+                                      updateCell(i, "category", "");
+                                      updateCell(i, "_group", e.target.value);
+                                    }}
+                                    className="w-full border border-gray-300 rounded text-xs px-1 py-1 bg-white text-gray-900"
+                                  >
+                                    <option value="">Group</option>
+                                    {groups.map((g) => (
+                                      <option key={g} value={g}>{g}</option>
+                                    ))}
+                                  </select>
+                                  <select
+                                    value={row.category ?? ""}
+                                    onChange={(e) => updateCell(i, "category", e.target.value)}
+                                    disabled={!currentGroup && !row._group}
+                                    className="w-full border border-gray-300 rounded text-xs px-1 py-1 bg-white text-gray-900 disabled:bg-gray-100"
+                                  >
+                                    <option value="">Select</option>
+                                    {(currentGroup
+                                      ? catsInGroup
+                                      : categories.filter(
+                                          (c) => (c.group || "Uncategorized") === row._group
+                                        )
+                                    ).map((c) => (
+                                      <option key={c.id} value={c.name}>
+                                        {c.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              );
+                            })()
                           ) : col === "year" ? (
                             <select
                               value={row[col] ?? ""}
