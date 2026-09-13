@@ -57,9 +57,16 @@ export default function HomePage() {
           </span>
 
           <div className="flex items-center gap-5 text-sm">
+            
+            
+           {/* 
             <a href="#about" className="text-blue-200 hover:text-white transition-colors">
               About
-            </a>
+            </a> 
+            */}
+
+
+
             <button
               disabled
               title="Coming soon"

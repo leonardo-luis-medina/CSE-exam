@@ -1,3 +1,4 @@
+import { loginRateLimit } from "@/lib/rate-limit";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -13,7 +14,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, req) => {
+        const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+        const { success } = await loginRateLimit.limit(ip);
+        if (!success) return null;
+
         if (!credentials?.email || !credentials?.password) return null;
 
         const admin = await prisma.admin.findUnique({
