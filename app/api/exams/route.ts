@@ -5,6 +5,13 @@ import { requireAdmin } from "@/lib/require-admin";
 export async function GET() {
   const exams = await prisma.exam.findMany({
     orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    include: {
+      presets: {
+        where: { hidden: false },
+        orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+        select: { id: true, name: true },
+      },
+    },
   });
   return NextResponse.json(exams);
 }

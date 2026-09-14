@@ -9,6 +9,7 @@ type Exam = {
   name: string;
   description: string;
   imageUrl: string | null;
+  presets: { id: number; name: string }[];
 };
 
 const PAGE_SIZE = 6;

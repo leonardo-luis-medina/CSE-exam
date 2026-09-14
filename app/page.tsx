@@ -11,6 +11,7 @@ type Exam = {
   name: string;
   description: string;
   imageUrl: string | null;
+  presets: { id: number; name: string }[];
 };
 
 export default function HomePage() {

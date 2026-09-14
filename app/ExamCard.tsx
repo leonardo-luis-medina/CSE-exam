@@ -9,6 +9,7 @@ type Exam = {
   name: string;
   description: string;
   imageUrl: string | null;
+  // presets: Preset[];
 };
 
 type Preset = { id: number; name: string };
@@ -44,6 +45,39 @@ export default function ExamCard({ exam, isAdmin, onDelete }: Props) {
   const PresetControls = () => (
     <>
       {!loadingPresets && presets.length > 0 && (
+
+/*
+
+
+export default function ExamCard({ exam, isAdmin, onDelete }: Props) {
+  const router = useRouter();
+  const presets = exam.presets;
+  const [selectedPresetId, setSelectedPresetId] = useState<string>(
+    presets.length > 0 ? presets[0].id.toString() : ""
+  );
+  const [modalOpen, setModalOpen] = useState(false);
+ 
+  const handleStart = () => {
+    if (!selectedPresetId) return;
+    router.push(`/exam/quiz?presetId=${selectedPresetId}`);
+  };
+ 
+  const PresetControls = () => (
+    <>
+      {presets.length > 0 && (
+
+
+
+*/
+
+
+
+
+
+
+
+
+
         <div className="flex gap-2">
           <select
             value={selectedPresetId}
